@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Year/Make/Model Selector</title>
+  <!-- Materialize CSS for Material-like styling -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet" />
+  <style>
+    .container {
+      margin-top: 20px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .loader {
+      margin: 20px auto;
+      display: flex;
+      justify-content: center;
+    }
+
+    .loader-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .loader-overlay.hidden {
+      display: none;
+    }
+
+    .preloader-wrapper {
+      width: 64px;
+      height: 64px;
+    }
+
+    .table-container {
+      margin-top: 20px;
+      overflow-x: auto;
+    }
+
+    table.striped th,
+    table.striped td {
+      padding: 8px 12px;
+      cursor: default;
+    }
+
+    table.striped th.sortable {
+      cursor: pointer;
+    }
+
+    select {
+      line-height: 1.5;
+      min-height: 25px;
+      /* Adjust line height for dropdown options */
+      padding: 4px 8px;
+      /* Adjust padding for a compact look */
+    }
+
+    .row {
+      margin-bottom: 10px;
+    }
+
+    h5 {
+      margin: 10px 0;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="loader-overlay hidden" id="loader">
+    <div class="preloader-wrapper active">
+      <div class="spinner-layer spinner-blue">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div>
+        <div class="gap-patch">
+          <div class="circle"></div>
+        </div>
+        <div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Start Dropdowns -->
+  <div class="container">
+    <h5>Select Year, Make, and Model</h5>
+    <div class="row">
+      <div class="input-field col s12 m4">
+        <select id="year-select">
+          <option value="" disabled selected>Year</option>
+        </select>
+        <label>Year</label>
+      </div>
+      <div class="input-field col s12 m4">
+        <select id="make-select">
+          <option value="" disabled selected>Make</option>
+        </select>
+        <label>Make</label>
+      </div>
+      <div class="input-field col s12 m4" id="model-select-wrapper" style="display:none;">
+        <select id="model-select">
+          <option value="" disabled selected>Model</option>
+        </select>
+        <label>Model</label>
+      </div>
+    </div>
+
+    <!-- Additional dropdowns (Condition, Damage 1, Damage 2) -->
+    <div class="row" id="additional-dropdowns">
+      <div class="input-field col s12 m4">
+        <select id="condition-select">
+          <option value="">Condition</option>
+          <option value="1">ENGINE STARTS</option>
+          <option value="2">NON-RUNNER</option>
+          <option value="3">RUN & DRIVE</option>
+        </select>
+        <label>Condition</label>
+      </div>
+      <div class="input-field col s12 m4">
+        <select id="damage1-select">
+          <option value="">Damage 1</option>
+          <option value="1">ALL OVER</option>
+          <option value="2">BIOHAZARD/CHEMICAL</option>
+          <option value="3">BURN</option>
+          <option value="4">BURN - ENGINE</option>
+          <option value="5">BURN - INTERIOR</option>
+          <option value="6">DAMAGE HISTORY</option>
+          <option value="7">FRAME DAMAGE</option>
+          <option value="8">FRONT END</option>
+          <option value="9">HAIL</option>
+          <option value="10">MECHANICAL</option>
+          <option value="11">MINOR DENT/SCRATCHES</option>
+          <option value="12">MISSING/ALTERED VIN</option>
+          <option value="13">NORMAL WEAR</option>
+          <option value="14">PARTIAL REPAIR</option>
+          <option value="15">REAR END</option>
+          <option value="16">REJECTED REPAIR</option>
+          <option value="17">REPLACED VIN</option>
+          <option value="18">ROLLOVER</option>
+          <option value="19">SIDE</option>
+          <option value="20">STRIPPED</option>
+          <option value="21">TOP/ROOF</option>
+          <option value="22">UNDERCARRIAGE</option>
+          <option value="23">UNKNOWN</option>
+          <option value="24">VANDALISM</option>
+          <option value="25">WATER/FLOOD</option>
+        </select>
+        <label>Damage 1</label>
+      </div>
+      <div class="input-field col s12 m4">
+        <select id="damage2-select">
+          <option value="">Damage 2</option>
+          <option value="1">ALL OVER</option>
+          <option value="2">BIOHAZARD/CHEMICAL</option>
+          <option value="3">BURN</option>
+          <option value="4">BURN - ENGINE</option>
+          <option value="5">BURN - INTERIOR</option>
+          <option value="6">DAMAGE HISTORY</option>
+          <option value="7">FRAME DAMAGE</option>
+          <option value="8">FRONT END</option>
+          <option value="9">HAIL</option>
+          <option value="10">MECHANICAL</option>
+          <option value="11">MINOR DENT/SCRATCHES</option>
+          <option value="12">MISSING/ALTERED VIN</option>
+          <option value="13">NORMAL WEAR</option>
+          <option value="14">PARTIAL REPAIR</option>
+          <option value="15">REAR END</option>
+          <option value="16">REJECTED REPAIR</option>
+          <option value="17">REPLACED VIN</option>
+          <option value="18">ROLLOVER</option>
+          <option value="19">SIDE</option>
+          <option value="20">STRIPPED</option>
+          <option value="21">TOP/ROOF</option>
+          <option value="22">UNDERCARRIAGE</option>
+          <option value="23">UNKNOWN</option>
+          <option value="24">VANDALISM</option>
+          <option value="25">WATER/FLOOD</option>
+        </select>
+        <label>Damage 2</label>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col s12 center-align">
+        <button id="search-button" class="btn waves-effect waves-light" disabled>
+          Search
+        </button>
+      </div>
+    </div>
+    <!-- End Dropdowns -->
+
+    <!-- Main Vehicles Table -->
+    <div class="table-container" id="vehicles-container" style="display:none;">
+      <h5>
+        <span id="stats" style="font-size: 0.9em; font-weight: normal; margin-left: 10px;">
+          <!-- Averages and count will be dynamically updated here -->
+        </span>
+      </h5>
+      <table class="striped">
+        <thead>
+          <tr>
+            <th class="sortable" data-col="invoice_date">Date</th>
+            <th class="sortable" data-col="sale_price">Sale Price</th>
+            <th class="sortable" data-col="mileage">Mileage</th>
+            <th class="sortable" data-col="yard_name">Yard Name</th>
+            <th class="sortable" data-col="condition_description">Condition</th>
+            <th class="sortable" data-col="title">Title</th>
+            <th class="sortable" data-col="damage_1_description">Damage 1</th>
+            <th class="sortable" data-col="damage_2_description">Damage 2</th>
+          </tr>
+        </thead>
+        <tbody id="vehicles-tbody"></tbody>
+      </table>
+    </div>
+
+  </div>
+
+
+  <!-- JavaScript dependencies for Materialize -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script>
+    const makesMap = {
+      "Acura": "ACUR",
+      "Alfa Romeo": "ALFA",
+      "AMC": "AMC",
+      "American General": "AMGN",
+      "American Motors": "AMC",
+      "Aston Martin": "ASTO",
+      "Audi": "AUDI",
+      "Bentley": "BENT",
+      "BMW": "BMW",
+      "Bugatti": "OTHR",
+      "Buick": "BUIC",
+      "Cadillac": "CADI",
+      "Checker": "CHEC",
+      "Chevrolet": "CHEV",
+      "Chrysler": "CHRY",
+      "Clenet": "CLEN",
+      "Cruise": "CUST",
+      "Daewoo": "DAEW",
+      "Daihatsu": "DAIH",
+      "Datsun": "DATS",
+      "Dodge": "DODG",
+      "Eagle": "EGIL",
+      "Ferrari": "FERR",
+      "Fiat": "FIAT",
+      "Fisker Automotive": "FISK",
+      "Ford": "FORD",
+      "Genesis": "GENS",
+      "Geo": "GEO",
+      "GMC": "GMC",
+      "Honda": "HOND",
+      "Hummer": "HUMM",
+      "Hyundai": "HYUN",
+      "Infiniti": "INFI",
+      "Isuzu": "ISU",
+      "Jaguar": "JAGU",
+      "Jeep": "JEEP",
+      "Karma Automotive LLC": "KARM",
+      "Kia": "KIA",
+      "Lamborghini": "LAMO",
+      "Land Rover": "LAND",
+      "Lexus": "LEXS",
+      "Lincoln": "LINC",
+      "Lotus": "LOTU",
+      "Lucid Motors": "OTHR",
+      "Maserati": "MASE",
+      "Maybach": "MAYB",
+      "Mazda": "MAZD",
+      "McLaren Automotive": "MCLA",
+      "Mercedes-Benz": "MERZ",
+      "Mercury": "MERC",
+      "Merkur": "MERK",
+      "MG": "MG",
+      "Mini": "MIN",
+      "Mitsubishi": "MITS",
+      "Morgan": "MORG",
+      "Nissan": "NISS",
+      "Oldsmobile": "OLDS",
+      "Panther": "PANO",
+      "Peugeot": "PEUG",
+      "Pininfarina": "PIAG",
+      "Plymouth": "PLYM",
+      "Polestar": "POLS",
+      "Pontiac": "PONT",
+      "Porsche": "PORS",
+      "Ram": "RAM",
+      "Renault": "RENA",
+      "Rivian": "REZV",
+      "Rolls-Royce": "ROL",
+      "Rover": "ROVE",
+      "Saab": "SAA",
+      "Saturn": "SATU",
+      "smart": "SMAR",
+      "Sterling": "STLG",
+      "Subaru": "SUBA",
+      "Suzuki": "SUZI",
+      "Tesla": "TESL",
+      "Toyota": "TOYT",
+      "Triumph": "TRIU",
+      "Volkswagen": "VOLK",
+      "Volvo": "VOLV",
+      "Yugo": "YUGO"
+    };
+
+    const yearSelect = document.getElementById('year-select');
+    const makeSelect = document.getElementById('make-select');
+    const modelSelect = document.getElementById('model-select');
+    const searchButton = document.getElementById('search-button');
+
+    const modelSelectWrapper = document.getElementById('model-select-wrapper');
+    const loader = document.getElementById('loader');
+    const vehiclesContainer = document.getElementById('vehicles-container');
+    const vehiclesTbody = document.getElementById('vehicles-tbody');
+
+    // Update loader behavior
+    function showLoader(show) {
+      const loader = document.getElementById('loader');
+      if (show) {
+        loader.classList.remove('hidden');
+      } else {
+        loader.classList.add('hidden');
+      }
+    }
+
+    let vehiclesData = []; // store fetched vehicles for sorting
+    let sortColumn = null;
+    let sortDirection = 'asc'; // 'asc' or 'desc'
+
+    const currentYear = new Date().getFullYear() + 1;
+    for (let y = currentYear; y >= 1980; y--) {
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.textContent = y;
+      yearSelect.appendChild(opt);
+    }
+
+    for (const m of Object.keys(makesMap)) {
+      const opt = document.createElement('option');
+      opt.value = m;
+      opt.textContent = m;
+      makeSelect.appendChild(opt);
+    }
+
+    M.FormSelect.init(yearSelect);
+    M.FormSelect.init(makeSelect);
+
+
+    function updateModels() {
+      const year = yearSelect.value;
+      const make = makeSelect.value;
+
+      if (year && make) {
+        showLoader(true);
+        modelSelectWrapper.style.display = 'none';
+        modelSelect.innerHTML = '<option value="" disabled selected>Model</option>';
+
+        const makeCode = makesMap[make];
+        const url = `https://us-central1-gcf-junkcarsolutions.cloudfunctions.net/copart-backend-get-models?year=${year}&make=${makeCode}`;
+        fetch(url)
+          .then(response => response.json())
+          .then(data => {
+            if (Array.isArray(data) && data.length > 0) {
+              data.forEach((modelValue) => {
+                const opt = document.createElement('option');
+                opt.value = modelValue;
+                opt.textContent = modelValue;
+                modelSelect.appendChild(opt);
+              });
+              M.FormSelect.init(modelSelect);
+              modelSelectWrapper.style.display = 'block';
+            } else {
+              modelSelectWrapper.style.display = 'none';
+            }
+          })
+          .catch(error => {
+            console.error('Error fetching models:', error);
+            modelSelectWrapper.style.display = 'none';
+          })
+          .finally(() => {
+            showLoader(false); // Ensure loader is hidden regardless of success or failure
+          });
+      } else {
+        modelSelectWrapper.style.display = 'none';
+      }
+
+      // Clear vehicles table whenever selection changes
+      vehiclesContainer.style.display = 'none';
+      vehiclesTbody.innerHTML = '';
+      vehiclesData = [];
+    }
+
+    // Search Button Click Handler
+    searchButton.addEventListener('click', function () {
+      const year = yearSelect.value;
+      const make = makeSelect.value;
+      const model = modelSelect.value;
+      const condition = document.getElementById('condition-select').value;
+      const damage1 = document.getElementById('damage1-select').value;
+      const damage2 = document.getElementById('damage2-select').value;
+
+      if (!year || !make || !model) {
+        alert("Please select Year, Make, and Model.");
+        return;
+      }
+
+      const makeCode = makesMap[make];
+      const url = `https://us-central1-gcf-junkcarsolutions.cloudfunctions.net/copart-backend?year=${year}&make=${makeCode}&model=${encodeURIComponent(model)}&condition=${condition}&damage1=${damage1}&damage2=${damage2}`;
+
+      showLoader(true);
+      vehiclesContainer.style.display = 'none';
+      vehiclesTbody.innerHTML = '';
+
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          if (Array.isArray(data) && data.length > 0) {
+            vehiclesData = data;
+            renderTable();
+          } else {
+            vehiclesContainer.style.display = 'none';
+            alert("No results found.");
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching data:', error);
+        })
+        .finally(() => {
+          showLoader(false);
+        });
+    });
+
+    function formatInvoiceDate(dateStr) {
+      if (!dateStr) return '';
+      const date = new Date(dateStr);
+      if (isNaN(date)) return dateStr; // fallback if invalid
+      return date.toLocaleDateString('en-US');
+    }
+
+    function formatCurrency(value) {
+      if (!value) return ''; // Handle empty or undefined values
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0, // No decimal places
+        maximumFractionDigits: 0, // No decimal places
+      }).format(value);
+    }
+
+    function renderTable() {
+      vehiclesTbody.innerHTML = '';
+
+      // Sort data before rendering
+      if (sortColumn) {
+        vehiclesData.sort((a, b) => compareValues(a[sortColumn], b[sortColumn], sortColumn));
+        if (sortDirection === 'desc') {
+          vehiclesData.reverse();
+        }
+      }
+
+      // Calculate averages
+      const totalSalePrice = vehiclesData.reduce((sum, vehicle) => sum + (parseFloat(vehicle.sale_price) || 0), 0);
+      const totalMileage = vehiclesData.reduce((sum, vehicle) => sum + (parseFloat(vehicle.mileage) || 0), 0);
+      const averageSalePrice = totalSalePrice / (vehiclesData.length || 1);
+      const averageMileage = totalMileage / (vehiclesData.length || 1);
+      const totalVehicles = vehiclesData.length;
+
+      // Update the stats inline with the title
+      const stats = document.getElementById('stats');
+      stats.innerHTML = `
+  <span style="margin-right: 20px;">
+    <span>Total Vehicles:</span> <span style="color: #4CAF50; font-weight: bold;">${totalVehicles}</span>
+  </span>
+  <span style="margin-right: 20px;">
+    <span>Average Sale Price:</span> <span style="color: #2196F3; font-weight: bold;">${formatCurrency(Math.round(averageSalePrice))}</span>
+  </span>
+  <span>
+    <span>Average Mileage:</span> <span style="color: #FF5722; font-weight: bold;">${Math.round(averageMileage).toLocaleString()} miles</span>
+  </span>
+`;
+
+
+      vehiclesData.forEach(vehicle => {
+        const tr = document.createElement('tr');
+        const columns = ['invoice_date', 'sale_price', 'mileage', 'yard_name', 'condition_description', 'title', 'damage_1_description', 'damage_2_description'];
+
+        columns.forEach(col => {
+          const td = document.createElement('td');
+          let value = vehicle[col] !== undefined ? vehicle[col] : '';
+          if (col === 'invoice_date') {
+            value = formatInvoiceDate(value);
+          } else if (col === 'sale_price') {
+            value = formatCurrency(value); // Format as currency
+          }
+          td.textContent = value;
+          tr.appendChild(td);
+        });
+        vehiclesTbody.appendChild(tr);
+      });
+      vehiclesContainer.style.display = vehiclesData.length > 0 ? 'block' : 'none';
+    }
+
+
+
+    // Sorting logic
+    function compareValues(a, b, col) {
+      if (col === 'invoice_date') {
+        // date comparison
+        const dateA = new Date(a).getTime();
+        const dateB = new Date(b).getTime();
+        return dateA - dateB;
+      }
+      if (col === 'sale_price' || col === 'mileage') {
+        // numeric comparison
+        const numA = parseFloat(a) || 0;
+        const numB = parseFloat(b) || 0;
+        return numA - numB;
+      }
+      // string comparison for other fields
+      const strA = (a || '').toString().toLowerCase();
+      const strB = (b || '').toString().toLowerCase();
+      if (strA < strB) return -1;
+      if (strA > strB) return 1;
+      return 0;
+    }
+
+    function handleHeaderClick(e) {
+      if (!e.target.classList.contains('sortable')) return;
+      const clickedCol = e.target.getAttribute('data-col');
+      if (sortColumn === clickedCol) {
+        // Toggle direction
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortColumn = clickedCol;
+        sortDirection = 'asc';
+      }
+      renderTable();
+    }
+
+    // Enable Search Button When Required Fields Are Filled
+    function validateSearchButton() {
+      const year = yearSelect.value;
+      const make = makeSelect.value;
+      const model = modelSelect.value;
+
+      // Enable button only if required fields are selected
+      searchButton.disabled = !(year && make && model);
+    }
+
+    yearSelect.addEventListener('change', updateModels);
+    makeSelect.addEventListener('change', updateModels);
+    modelSelect.addEventListener('change', validateSearchButton);
+
+    // Add event listener to thead for sorting
+    document.querySelector('thead').addEventListener('click', handleHeaderClick);
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const elems = document.querySelectorAll('select');
+      M.FormSelect.init(elems);
+    });
+
+  </script>
+</body>
+
+</html>
