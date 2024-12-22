@@ -111,17 +111,21 @@
         </select>
         <label>Make</label>
       </div>
-      <div class="input-field col s12 m4" id="model-select-wrapper" style="display:none;">
-        <select id="model-select">
+      <div class="input-field col s12 m4" id="model-select-wrapper">
+        <select id="model-select" style="display: none;">
           <option value="" disabled selected>Model</option>
         </select>
         <label>Model</label>
+        <!-- Loading message positioned here -->
+        <div id="loading-message" style="text-align: center; font-weight: bold; color: #007BFF; display: none;">
+          Loading...
+        </div>
       </div>
     </div>
 
-    <!-- Additional dropdowns (Condition, Damage 1, Damage 2) -->
+    <!-- Additional dropdowns (Condition, Title, Damage 1, Damage 2) -->
     <div class="row" id="additional-dropdowns">
-      <div class="input-field col s12 m4">
+      <div class="input-field col s12 m3">
         <select id="condition-select">
           <option value="">Condition</option>
           <option value="1">ENGINE STARTS</option>
@@ -130,7 +134,17 @@
         </select>
         <label>Condition</label>
       </div>
-      <div class="input-field col s12 m4">
+      <div class="input-field col s12 m3">
+        <select id="title-type-select">
+          <option value="">Title Type</option>
+          <option value="1">CLEAN</option>
+          <option value="2">SALVAGE</option>
+          <option value="3">FLOOD</option>
+          <option value="4">UNKNOWN</option>
+        </select>
+        <label>Title Type</label>
+      </div>
+      <div class="input-field col s12 m3">
         <select id="damage1-select">
           <option value="">Damage 1</option>
           <option value="1">ALL OVER</option>
@@ -161,7 +175,7 @@
         </select>
         <label>Damage 1</label>
       </div>
-      <div class="input-field col s12 m4">
+      <div class="input-field col s12 m3">
         <select id="damage2-select">
           <option value="">Damage 2</option>
           <option value="1">ALL OVER</option>
@@ -364,38 +378,81 @@
       const year = yearSelect.value;
       const make = makeSelect.value;
 
+      const loadingMessage = document.getElementById('loading-message');
+      const modelSelect = document.getElementById('model-select');
+
       if (year && make) {
-        showLoader(true);
-        modelSelectWrapper.style.display = 'none';
-        modelSelect.innerHTML = '<option value="" disabled selected>Model</option>';
+        showLoader(true); // Show the overlay loader
+        loadingMessage.style.display = 'block'; // Show loading message
+        loadingMessage.textContent = 'Fetching available models...';
+
+        // Clear the dropdown options while keeping the placeholder
+        while (modelSelect.firstChild) {
+          modelSelect.removeChild(modelSelect.firstChild);
+        }
+        const placeholderOption = document.createElement('option');
+        placeholderOption.value = '';
+        placeholderOption.disabled = true;
+        placeholderOption.selected = true;
+        placeholderOption.textContent = 'Model';
+        modelSelect.appendChild(placeholderOption);
 
         const makeCode = makesMap[make];
         const url = `https://us-central1-gcf-junkcarsolutions.cloudfunctions.net/copart-backend-get-models?year=${year}&make=${makeCode}`;
+
         fetch(url)
           .then(response => response.json())
           .then(data => {
             if (Array.isArray(data) && data.length > 0) {
+              // Add fetched options to the dropdown
               data.forEach((modelValue) => {
                 const opt = document.createElement('option');
                 opt.value = modelValue;
                 opt.textContent = modelValue;
                 modelSelect.appendChild(opt);
               });
-              M.FormSelect.init(modelSelect);
-              modelSelectWrapper.style.display = 'block';
+
+              M.FormSelect.init(modelSelect); // Reinitialize Materialize dropdown
+              loadingMessage.style.display = 'none'; // Hide the loading message
             } else {
-              modelSelectWrapper.style.display = 'none';
+              // No models found, reset the dropdown
+              while (modelSelect.firstChild) {
+                modelSelect.removeChild(modelSelect.firstChild);
+              }
+              const noModelsOption = document.createElement('option');
+              noModelsOption.value = '';
+              noModelsOption.disabled = true;
+              noModelsOption.selected = true;
+              noModelsOption.textContent = 'No models available';
+              modelSelect.appendChild(noModelsOption);
+
+              M.FormSelect.init(modelSelect); // Reinitialize Materialize dropdown
+              loadingMessage.textContent = 'No models found for the selected Year and Make.';
             }
           })
           .catch(error => {
             console.error('Error fetching models:', error);
-            modelSelectWrapper.style.display = 'none';
+            loadingMessage.textContent = 'Error loading models. Please try again.';
           })
           .finally(() => {
-            showLoader(false); // Ensure loader is hidden regardless of success or failure
+            showLoader(false); // Hide the overlay loader
+            setTimeout(() => {
+              loadingMessage.style.display = 'none'; // Hide the message after 3 seconds
+            }, 3000);
           });
       } else {
-        modelSelectWrapper.style.display = 'none';
+        // Reset dropdown to default if no year/make is selected
+        while (modelSelect.firstChild) {
+          modelSelect.removeChild(modelSelect.firstChild);
+        }
+        const placeholderOption = document.createElement('option');
+        placeholderOption.value = '';
+        placeholderOption.disabled = true;
+        placeholderOption.selected = true;
+        placeholderOption.textContent = 'Model';
+        modelSelect.appendChild(placeholderOption);
+
+        M.FormSelect.init(modelSelect); // Reinitialize Materialize dropdown
       }
 
       // Clear vehicles table whenever selection changes
@@ -410,6 +467,7 @@
       const make = makeSelect.value;
       const model = modelSelect.value;
       const condition = document.getElementById('condition-select').value;
+      const titleType = document.getElementById('title-type-select').value; // New Title Type field
       const damage1 = document.getElementById('damage1-select').value;
       const damage2 = document.getElementById('damage2-select').value;
 
@@ -419,8 +477,7 @@
       }
 
       const makeCode = makesMap[make];
-      const url = `https://us-central1-gcf-junkcarsolutions.cloudfunctions.net/copart-backend?year=${year}&make=${makeCode}&model=${encodeURIComponent(model)}&condition=${condition}&damage1=${damage1}&damage2=${damage2}`;
-
+      const url = `https://us-central1-gcf-junkcarsolutions.cloudfunctions.net/copart-backend?year=${year}&make=${makeCode}&model=${encodeURIComponent(model)}&condition=${condition}&title=${titleType}&damage1=${damage1}&damage2=${damage2}`;
       showLoader(true);
       vehiclesContainer.style.display = 'none';
       vehiclesTbody.innerHTML = '';
@@ -431,9 +488,10 @@
           if (Array.isArray(data) && data.length > 0) {
             vehiclesData = data;
             renderTable();
+            loadingMessage.textContent = 'Vehicle data loaded successfully.';
           } else {
             vehiclesContainer.style.display = 'none';
-            alert("No results found.");
+            loadingMessage.textContent = 'No results found.';
           }
         })
         .catch(error => {
@@ -512,6 +570,10 @@
         vehiclesTbody.appendChild(tr);
       });
       vehiclesContainer.style.display = vehiclesData.length > 0 ? 'block' : 'none';
+
+      // Disable Search Button after rendering
+      searchButton.disabled = true;
+
     }
 
 
@@ -560,6 +622,18 @@
       // Enable button only if required fields are selected
       searchButton.disabled = !(year && make && model);
     }
+
+    // Function to enable Search button
+    function enableSearchButton() {
+      searchButton.disabled = false;
+    }
+
+    // Add event listeners to all dropdowns
+    const dropdowns = document.querySelectorAll('#year-select, #make-select, #model-select, #condition-select, #title-type-select, #damage1-select, #damage2-select');
+
+    dropdowns.forEach(dropdown => {
+      dropdown.addEventListener('change', enableSearchButton);
+    });
 
     yearSelect.addEventListener('change', updateModels);
     makeSelect.addEventListener('change', updateModels);
