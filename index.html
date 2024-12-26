@@ -232,7 +232,7 @@
             <th class="sortable" data-col="mileage">Mileage</th>
             <th class="sortable" data-col="yard_name">Yard Name</th>
             <th class="sortable" data-col="condition_description">Condition</th>
-            <th class="sortable" data-col="title">Title</th>
+            <th class="sortable" data-col="title_description">Title</th>
             <th class="sortable" data-col="damage_1_description">Damage 1</th>
             <th class="sortable" data-col="damage_2_description">Damage 2</th>
           </tr>
@@ -554,7 +554,7 @@
 
       vehiclesData.forEach(vehicle => {
         const tr = document.createElement('tr');
-        const columns = ['invoice_date', 'sale_price', 'mileage', 'yard_name', 'condition_description', 'title', 'damage_1_description', 'damage_2_description'];
+        const columns = ['invoice_date', 'sale_price', 'mileage', 'yard_name', 'condition_description', 'title_description', 'damage_1_description', 'damage_2_description'];
 
         columns.forEach(col => {
           const td = document.createElement('td');
